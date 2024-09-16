@@ -130,9 +130,14 @@ export const todosPage = () => {
     btnDelete.style.borderRadius = "3px";
     btnDelete.textContent = "Delete";
     btnDelete.addEventListener("click", () => {
-      console.log(`Eliminando todo con ID: ${todo.id}`);
-      tr.remove(); // Remover la fila de la tabla
-    });
+      fetch(`http://localhost:4000/todos/${todo.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      }).then(() => {
+        window.alert(`La tarea ${todo.id} se a eliminado correctamente`)
+        tr.remove();
+      });
+  })
 
     // Botón de editar
     const btnEdit = document.createElement("button");
@@ -143,26 +148,31 @@ export const todosPage = () => {
     btnEdit.style.marginLeft = "5px";
     btnEdit.textContent = "Edit";
     btnEdit.addEventListener("click", () => {
-      // Solicitar nueva descripción
-      const newTitle = prompt("Ingrese la nueva descripción del Todo:", todo.title);
-      if (!newTitle) {
-        alert("Debe ingresar una descripción.");
-        return;
+      const newTitle = prompt("Ingrese el nuevo título:", todo.title);
+      const newCompleted = confirm("¿Está completada la tarea?");
+
+      if (newTitle !== null) {
+        fetch(`http://localhost:4000/todos/${todo.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: newTitle,
+            completed: newCompleted
+          }),
+          credentials: 'include'
+        }).then(response => response.json())
+        .then(updatedTodo => {
+          console.log(updatedTodo);
+          const title = updatedTodo.title || 'Título no disponible';
+          const completed = updatedTodo.completed ? "Sí" : "No";
+          
+          td2.textContent = title;
+          td3.textContent = completed;
+          window.alert(`La tarea ${todo.id} se modificó correctamente`);
+        });
       }
-
-      // Solicitar si está completado
-      const newCompletedInput = prompt("¿Está completado el todo? (Sí/No)", todo.completed ? "Sí" : "No").toLowerCase();
-      const newCompleted = newCompletedInput === "sí" || newCompletedInput === "si";
-
-      // Actualizar el todo
-      todo.title = newTitle;
-      todo.completed = newCompleted;
-
-      // Actualizar visualmente la tabla
-      td2.textContent = newTitle;
-      td3.textContent = newCompleted ? "Sí" : "No";
-
-      console.log(`Todo actualizado con ID: ${todo.id}`, todo);
     });
 
     td5.appendChild(btnDelete);
@@ -202,42 +212,44 @@ export const todosPage = () => {
     });
 
   // Acción para crear un nuevo todo
-  btnCreate.addEventListener("click", () => {
-    // Obtener el ID más alto en la tabla
-    let maxId = 0;
-    document.querySelectorAll("tbody tr").forEach((row) => {
-      const id = parseInt(row.children[0].textContent);
-      if (id > maxId) {
-        maxId = id;
-      }
-    });
+  btnCreate.addEventListener("click", async () => {
+    // Solicitar los datos de la nueva tarea al usuario
+    const newTitle = prompt("Ingresa el título de la nueva tarea:");
+    const newCompleted = confirm("¿Marcar la nueva tarea como completada?");
 
-    // Generar el siguiente ID
-    const newId = maxId + 1;
+    // Si el usuario no cancela la acción de creación
+    if (newTitle !== null) {
+        try {
+            // Hacer la solicitud POST al backend para crear la tarea
+            const response = await fetch(`http://localhost:4000/todos`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`  // Token para autenticación
+                },
+                body: JSON.stringify({
+                    title: newTitle,        // Título de la nueva tarea
+                    completed: newCompleted // Estado de completado
+                })
+            });
 
-    // Solicitar la descripción del todo
-    const title = prompt("Ingrese la descripción del Todo:");
-    if (!title) {
-      alert("Debe ingresar una descripción.");
-      return;
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message); // Mostrar mensaje de éxito
+                // Aquí puedes actualizar la UI, por ejemplo, agregar la nueva tarea a la lista
+                // const newTodoElement = document.createElement("li");
+                // newTodoElement.textContent = result.newTask.title;
+                // document.getElementById("todo-list").appendChild(newTodoElement);
+            } else {
+                alert(result.message); // Mostrar mensaje de error
+            }
+        } catch (error) {
+            console.error("Error al crear la tarea:", error);
+            alert("Hubo un error al crear la tarea");
+        }
     }
-
-    // Solicitar si el todo está completado
-    const completedInput = prompt("¿Está completado el todo? (Sí/No)").toLowerCase();
-    const completed = completedInput === "sí" || completedInput === "si";
-
-    const newTodo = {
-      id: newId,
-      title: title,
-      completed: completed,
-      owner: commonOwner || "User123"
-    };
-
-    // Agregar el nuevo todo a la tabla visualmente
-    addTodoToTable(newTodo);
-
-    console.log("Nuevo todo creado:", newTodo);
-  });
+});
 
   container.appendChild(title);
   container.appendChild(table);
