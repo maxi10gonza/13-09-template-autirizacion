@@ -15,6 +15,6 @@ authRouter.post("/sign-in", signInCtrl);
 authRouter.post("/sign-out", signOutCtrl);
 
 // Endpoint para validar la sesión
-authRouter.get("/session", validarJwt, validateSessionCtrl);
+authRouter.get("/session", validarJwt, validateSessionCtrl); 
 
 export { authRouter };

@@ -8,7 +8,7 @@ const todosRouter = Router();
 todosRouter.get("/", validarJwt, getAllTodosCtrl);
 
 // Crear una nueva tarea para el usuario
-todosRouter.post("/:userId", validarJwt, createTodo);
+todosRouter.post("/agregar", validarJwt, createTodo);
 
 // Actualizar una tarea existente para el usuario
 todosRouter.put("/:id", validarJwt, updateTodoById);

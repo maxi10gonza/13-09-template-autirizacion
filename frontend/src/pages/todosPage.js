@@ -221,11 +221,11 @@ export const todosPage = () => {
     if (newTitle !== null) {
         try {
             // Hacer la solicitud POST al backend para crear la tarea
-            const response = await fetch(`http://localhost:4000/todos`, {
+            const response = await fetch(`http://localhost:4000/todos/agregar`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`  // Token para autenticación
                 },
                 body: JSON.stringify({
                     title: newTitle,        // Título de la nueva tarea
@@ -241,6 +241,7 @@ export const todosPage = () => {
                 // const newTodoElement = document.createElement("li");
                 // newTodoElement.textContent = result.newTask.title;
                 // document.getElementById("todo-list").appendChild(newTodoElement);
+                location.reload();
             } else {
                 alert(result.message); // Mostrar mensaje de error
             }

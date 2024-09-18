@@ -11,7 +11,7 @@ export const createTodo = (req, res) => {
   const { title, completed } = req.body;
   const owner = req.user.id; // Asignar el ID del usuario autenticado
 
-  // Generador de ID automático
+  // Generador de ID automático 
   const newId = database.todos.length
     ? Math.max(...database.todos.map(t => t.id)) + 1
     : 1;
